@@ -11,6 +11,11 @@ class CategoryCreate(SQLModel):
     color: Optional[str] = Field(default=None, max_length=7)
 
 
+class CategoryUpdate(SQLModel):
+    title: Optional[str] = None
+    color: Optional[str] = None
+
+
 class Category(CategoryCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 

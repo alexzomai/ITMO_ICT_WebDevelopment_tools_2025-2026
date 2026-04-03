@@ -12,6 +12,10 @@ class TagCreate(SQLModel):
     name: str
 
 
+class TagUpdate(SQLModel):
+    name: Optional[str] = None
+
+
 class Tag(TagCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 

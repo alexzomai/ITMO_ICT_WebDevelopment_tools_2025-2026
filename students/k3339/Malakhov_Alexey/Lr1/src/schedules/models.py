@@ -13,6 +13,13 @@ class ScheduleCreate(SQLModel):
     next_run_at: datetime
 
 
+class ScheduleUpdate(SQLModel):
+    task_id: Optional[int] = None
+    recurrence: Optional[RecurrenceType] = None
+    next_run_at: Optional[datetime] = None
+    is_active: Optional[bool] = None
+
+
 class Schedule(ScheduleCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     is_active: bool = Field(default=True)
