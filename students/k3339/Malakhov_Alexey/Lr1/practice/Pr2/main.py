@@ -60,7 +60,7 @@ def task_update(task_id: int, task: TaskUpdate, session=Depends(get_session)):
     for key, value in task_data.items():
         setattr(db_task, key, value)
     if tag_ids is not None:
-        tags = session.exec(select(Tag).where(Tag.id.in_(tag_ids))).all()
+        tags = session.exec(select(Tag).where(Tag.id.in_(tag_ids))).all()  # type: ignore
         db_task.tags = tags
     db_task.updated_at = datetime.now(timezone.utc)
     session.add(db_task)
