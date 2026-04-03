@@ -12,11 +12,5 @@ dependencies = [
     "sqlmodel>=0.0.37",
 ]
 
-[tool.pyright]
-pythonPath = "."
-extraPaths = ["Lr1", "Lr1/Pr1", "Lr1/Pr2"]
-pythonVersion = "3.12"
-typeCheckingMode = "basic"
-include = ["Lr1"]
-venvPath = "."
-venv = ".venv"
+[tool.basedpyright]
+reportReturnType = false

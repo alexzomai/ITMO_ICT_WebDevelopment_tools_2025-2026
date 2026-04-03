@@ -1,7 +1,8 @@
 {
   "pythonVersion": "3.12",
   "typeCheckingMode": "basic",
-  "extraPaths": ["Lr1", "Lr1/Pr1", "Lr1/Pr2"],
+  "extraPaths": ["Lr1", "Lr1/Pr1", "Lr1/Pr2", "src"],
   "venvPath": ".",
   "venv": ".venv",
+  "reportReturnType": false,
 }

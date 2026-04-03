@@ -30,4 +30,4 @@ archive.zip
 # macOS
 .DS_Store
 
-.claude
+**/.claude/**
