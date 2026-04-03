@@ -1,0 +1,23 @@
+[project]
+name = "malakhov-alexey"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[all]>=0.135.3",
+    "psycopg2-binary>=2.9.11",
+    "sqlmodel>=0.0.37",
+]
+
+[tool.uv]
+pythonpath = ["Lr1/Pr2", "Lr1/Pr1", "Lr1"]
+
+[tool.pyright]
+pythonPath = "."
+extraPaths = ["Lr1", "Lr1/Pr1", "Lr1/Pr2"]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+include = ["Lr1"]
+venvPath = "."
+venv = ".venv"
