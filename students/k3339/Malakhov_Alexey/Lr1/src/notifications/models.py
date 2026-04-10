@@ -1,10 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 from enums import NotificationType
-from tasks.models import Task
+
+if TYPE_CHECKING:
+    from tasks.models import Task
 
 
 class NotificationCreate(SQLModel):
@@ -24,7 +26,7 @@ class Notification(NotificationCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     is_sent: bool = Field(default=False)
 
-    task: Optional[Task] = Relationship(back_populates="notifications")
+    task: Optional["Task"] = Relationship(back_populates="notifications")
 
 
 class NotificationRead(NotificationCreate):

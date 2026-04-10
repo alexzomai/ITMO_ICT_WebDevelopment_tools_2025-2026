@@ -13,6 +13,7 @@ import tags.models  # noqa: F401
 import tasks.history_models  # noqa: F401
 import tasks.models  # noqa: F401
 import tasks.task_tag_models  # noqa: F401
+import users.models  # noqa: F401
 
 load_dotenv()
 

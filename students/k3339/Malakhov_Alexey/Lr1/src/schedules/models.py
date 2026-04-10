@@ -1,10 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 from enums import RecurrenceType
-from tasks.models import Task
+
+if TYPE_CHECKING:
+    from tasks.models import Task
 
 
 class ScheduleCreate(SQLModel):
@@ -24,7 +26,7 @@ class Schedule(ScheduleCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     is_active: bool = Field(default=True)
 
-    task: Optional[Task] = Relationship(back_populates="schedules")
+    task: Optional["Task"] = Relationship(back_populates="schedules")
 
 
 class ScheduleRead(ScheduleCreate):
