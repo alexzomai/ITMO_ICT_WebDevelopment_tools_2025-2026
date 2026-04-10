@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from db.connection import get_session
-from security import hash_password
+from security import hash_password, verify_password
 from users.dependencies import get_current_user
 from users.models import User, UserCreate, UserRead, UserUpdate
 
@@ -36,18 +36,27 @@ def register(user: UserCreate, session: Session = Depends(get_session)) -> UserR
 # Возвращает список всех пользователей.
 @router.get("/", response_model=List[UserRead])
 def users_list(session: Session = Depends(get_session)):
-    pass
+    return session.exec(select(User)).all()
 
 
 # Возвращает профиль текущего авторизованного пользователя.
 # Требует валидный JWT-токен.
 @router.get("/me", response_model=UserRead)
 def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
-    pass
+    return current_user
 
 
 # Смена пароля текущего авторизованного пользователя.
 # Проверяет текущий пароль и устанавливает новый.
 @router.patch("/me/password", response_model=UserRead)
-def change_password(user: UserUpdate, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)) -> UserRead:
-    pass
+def change_password(
+    user: UserUpdate, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
+) -> UserRead:
+    if not verify_password(user.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    current_user.password_hash = hash_password(user.new_password)
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return current_user

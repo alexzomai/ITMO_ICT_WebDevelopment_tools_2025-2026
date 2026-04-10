@@ -16,13 +16,13 @@ class UserCreate(UserBase):
 class UserUpdate(SQLModel):
     username: Optional[str] = None
     email: Optional[str] = None
-    current_password: Optional[str] = None
-    new_password: Optional[str] = None
+    current_password: str
+    new_password: str
 
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(unique=True)
+    email: EmailStr = Field(unique=True)
     password_hash: str
 
 
