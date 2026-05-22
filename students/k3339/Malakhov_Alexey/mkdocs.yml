@@ -1,0 +1,28 @@
+site_name: Малахов Алексей — ИКТ Веб-разработка
+site_url: https://tonikx.github.io/ITMO_ICT_WebDevelopment_tools_2025-2026/students/k3339/Malakhov_Alexey/
+docs_dir: docs
+
+theme:
+  name: material
+  language: ru
+  palette:
+    scheme: default
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - ЛР1 — Тайм-менеджер (FastAPI):
+    - Главная: index.md
+    - Модели: models.md
+    - Эндпоинты: endpoints.md
+    - БД и миграции: db.md
+    - Аутентификация: auth.md
+    - Практики: practices.md
+  - ЛР2 — Параллелизм в Python:
+    - Главная: lr2/index.md
+    - Задание 1 — Сумма чисел: lr2/task1.md
+    - Задание 2 — Парсинг: lr2/task2.md
