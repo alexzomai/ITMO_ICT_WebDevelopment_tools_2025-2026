@@ -26,3 +26,8 @@ nav:
     - Главная: lr2/index.md
     - Задание 1 — Сумма чисел: lr2/task1.md
     - Задание 2 — Парсинг: lr2/task2.md
+  - ЛР3 — Docker и парсер-сервис:
+    - Главная: lr3/index.md
+    - Docker и docker-compose: lr3/docker.md
+    - Парсер-сервис: lr3/parser-service.md
+    - Эндпоинт /parse в API: lr3/parse-endpoint.md
