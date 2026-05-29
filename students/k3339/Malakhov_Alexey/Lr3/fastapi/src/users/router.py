@@ -1,7 +1,8 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from db.connection import get_session
 from security import hash_password, verify_password
@@ -11,52 +12,37 @@ from users.models import User, UserCreate, UserRead, UserUpdate
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-# Регистрация нового пользователя.
-# Хэширует пароль и сохраняет пользователя в БД.
 @router.post("/register", status_code=201, response_model=UserRead)
-def register(user: UserCreate, session: Session = Depends(get_session)) -> UserRead:
-    db_check_user = session.exec(select(User).where(User.email == user.email)).first()
-    if db_check_user:
+async def register(user: UserCreate, session: AsyncSession = Depends(get_session)) -> UserRead:
+    if (await session.exec(select(User).where(User.email == user.email))).first():
         raise HTTPException(status_code=400, detail="Email already registered")
-
-    password_hash = hash_password(user.password)
-
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        password_hash=password_hash,
-    )
-
+    db_user = User(username=user.username, email=user.email, password_hash=hash_password(user.password))
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
     return db_user
 
 
-# Возвращает список всех пользователей.
 @router.get("/", response_model=List[UserRead])
-def users_list(session: Session = Depends(get_session)):
-    return session.exec(select(User)).all()
+async def users_list(session: AsyncSession = Depends(get_session)):
+    return (await session.exec(select(User))).all()
 
 
-# Возвращает профиль текущего авторизованного пользователя.
-# Требует валидный JWT-токен.
 @router.get("/me", response_model=UserRead)
-def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
+async def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
     return current_user
 
 
-# Смена пароля текущего авторизованного пользователя.
-# Проверяет текущий пароль и устанавливает новый.
 @router.patch("/me/password", response_model=UserRead)
-def change_password(
-    user: UserUpdate, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
+async def change_password(
+    user: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ) -> UserRead:
     if not verify_password(user.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
-
     current_user.password_hash = hash_password(user.new_password)
     session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
+    await session.commit()
+    await session.refresh(current_user)
     return current_user

@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, HttpUrl
-from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from db.connection import get_session
 from enums import PriorityType, StatusType
@@ -14,6 +16,8 @@ router = APIRouter(prefix="/parse", tags=["parser"])
 
 PARSER_URL = os.getenv("PARSER_URL", "http://parser:8001")
 PARSER_TIMEOUT = float(os.getenv("PARSER_TIMEOUT", "30"))
+
+_TASK_OPTIONS = [selectinload(Task.category), selectinload(Task.tags)]  # type: ignore
 
 
 class ParseRequest(BaseModel):
@@ -42,7 +46,7 @@ async def parse_url(payload: ParseRequest) -> ParseResult:
 @router.post("/task", status_code=201, response_model=TaskRead)
 async def parse_url_into_task(
     payload: ParseRequest,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ) -> TaskRead:
     async with httpx.AsyncClient(timeout=PARSER_TIMEOUT) as client:
         try:
@@ -54,10 +58,9 @@ async def parse_url_into_task(
         raise HTTPException(status_code=resp.status_code, detail=resp.json().get("detail", resp.text))
 
     data = resp.json()
-    title = data["title"]
-    description = data["description"]
+    title, description = data["title"], data["description"]
 
-    existing = session.exec(select(Task).where(Task.title == title)).first()
+    existing = (await session.exec(select(Task).where(Task.title == title).options(*_TASK_OPTIONS))).first()
     if existing:
         return existing
 
@@ -69,6 +72,6 @@ async def parse_url_into_task(
         deadline=datetime.now(timezone.utc) + timedelta(days=7),
     )
     session.add(db_task)
-    session.commit()
-    session.refresh(db_task)
-    return db_task
+    await session.commit()
+    db_task = await session.get(Task, db_task.id, options=_TASK_OPTIONS)
+    return db_task  # type: ignore
