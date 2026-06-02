@@ -1,16 +1,13 @@
 services:
   db:
     image: postgres:16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "123"
-      POSTGRES_DB: tasks_db
+    env_file: .env
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d tasks_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,12 +17,16 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   parser:
     build:
       context: ./parser
-    environment:
-      PYTHONPATH: /app
+    env_file: .env
     ports:
       - "8001:8001"
     restart: unless-stopped
@@ -33,18 +34,28 @@ services:
   api:
     build:
       context: ./fastapi
-    environment:
-      DB_URL: postgresql+psycopg2://postgres:123@db:5432/tasks_db
-      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
-      ALGORITHM: HS256
-      PARSER_URL: http://parser:8001
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
       parser:
         condition: service_started
+      redis:
+        condition: service_healthy
     ports:
       - "8000:8000"
+    restart: unless-stopped
+
+  celery:
+    build:
+      context: ./fastapi
+    command: celery -A celery_app.celery worker --loglevel=info
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
